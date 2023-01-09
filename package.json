@@ -1,0 +1,36 @@
+{
+  "name": "library",
+  "version": "1.0.0",
+  "description": "Estudo Node - Criando FS",
+  "main": "index.js",
+  "type": "module",
+  "license": "AGPL-version-3.0",
+  "private": false,
+  "engines": {
+    "node": ">= 14.0.0",
+    "npm": ">= 6.0.0"
+  },
+  "homepage": "",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "bugs": "",
+  "keywords": [],
+  "author": {
+    "name": "Random Name"
+  },
+  "contributors": [],
+  "scripts": {
+    "start": "nodemon src/index.js",
+    "dev": "",
+    "test": ""
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.20"
+  }
+}
