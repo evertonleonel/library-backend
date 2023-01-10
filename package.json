@@ -22,8 +22,8 @@
   },
   "contributors": [],
   "scripts": {
-    "start": "nodemon src/index.js",
-    "dev": "",
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
     "test": ""
   },
   "dependencies": {

@@ -1,30 +1,12 @@
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
+import express from 'express';
+import { allBooks as books } from './routes/books/allBooks.mjs';
+const { randomUUID } = require('crypto');
 
-import { v4 as uuidv4 } from "uuid";
-import { allBooks } from "./routes/books/allBooks.mjs";
-
-const express = require("express");
+const express = require('express');
 export const app = express();
 
 app.use(express.json());
 //Pedimos para o express passar a considerar o padrão json nas rotas.
-
-const id = uuidv4();
-// Identificador único universal
-
-const books = allBooks;
-
-function logRoutes(request, response, next) {
-  const { method, url } = request;
-  const route = `[${method.toUpperCase()}] ${url}`;
-  console.log(route);
-
-  return next();
-}
-
-app.use(logRoutes);
-// Invocando o middleware
 
 /* 
 -------------------------------
@@ -32,28 +14,26 @@ app.use(logRoutes);
 -------------------------------
 */
 
-/*
+/*  
   ATIVAR LIVRO
 */
 
-app.patch("/books/active/:idBook", function (request, response) {
+app.patch('/books/:idBook/active', function (request, response) {
   const { idBook } = request.params;
 
-  const indexBook = books.findIndex((item) => item.id === idBook);
-  const bookFind = books.find((item) => item.id === idBook);
+  const indexBook = books.findIndex(item => item.id === idBook);
+  const bookFind = books[indexBook];
 
   if (indexBook < 0) {
-    return response.status(404).json({ error: "Book not found" });
+    return response.status(404).json({ error: 'Book not found' });
   }
 
   const updateStatus = {
-    description: "",
+    description: '',
     isActive: true,
   };
 
   bookFind.status = updateStatus;
-
-  books[indexBook] = bookFind;
 
   return response.status(204).send();
 });
@@ -62,20 +42,18 @@ app.patch("/books/active/:idBook", function (request, response) {
         BUSCAR HISTORICO DO LIVRO
 -------------------------------
 */
-app.get("/book/:idBook/rentHistorys/", function (request, response) {
+app.get('/books/:idBook/rentHistory', function (request, response) {
   const { idBook } = request.params;
 
-  const indexBook = books.findIndex((item) => item.id === idBook);
+  const indexBook = books.findIndex(item => item.id === idBook);
   const bookFind = books[indexBook];
 
   if (indexBook < 0) {
     //Se não encontrou nada, retornamos um erro
-    return response.status(404).json({ error: "Project not found" });
+    return response.status(404).json({ error: 'Project not found' });
   }
 
-  const rentHistoryBook = bookFind.rentHistory;
-
-  return response.json(rentHistoryBook);
+  return response.json(bookFind.rentHistory);
 });
 
 /* 
@@ -83,14 +61,32 @@ app.get("/book/:idBook/rentHistorys/", function (request, response) {
         BUSCAR TODOS HISTORICOS
 -------------------------------
 */
-app.get("/books/allRentHistorys", function (request, response) {
-  const allRentHistorys = books.map((book) => {
+app.get('/books/rentHistories', function (request, response) {
+  const rentHistories = books.map(book => {
     if (book.rentHistory.length > 0) {
       return book.rentHistory;
     }
   });
 
-  return response.json(allRentHistorys);
+  return response.json(rentHistories);
+});
+
+/* 
+-------------------------------
+        BUSCAR LIVROS
+-------------------------------
+*/
+app.get('/books/:idBook', function (request, response) {
+  const { idBook } = request.params;
+
+  const indexBook = books.findIndex(item => item.id === idBook);
+  const bookFind = books[indexBook];
+
+  if (indexBook < 0) {
+    //Se não encontrou nada, retornamos um erro
+    return response.status(404).json({ error: 'Book not found' });
+  }
+  return response.json(bookFind);
 });
 
 /* 
@@ -98,7 +94,7 @@ app.get("/books/allRentHistorys", function (request, response) {
         BUSCAR TODOS OS LIVROS
 -------------------------------
 */
-app.get("/books", function (request, response) {
+app.get('/books', function (request, response) {
   return response.json(books);
 });
 
@@ -107,16 +103,24 @@ app.get("/books", function (request, response) {
           CRIAR LIVRO
 -------------------------------
 */
-app.post("/books", function (request, response) {
+app.post('/books', function (request, response) {
   const { tittle, author, genre, image, systemEntryDate, synopsis } =
     request.body;
+
+  if (!tittle || !author || !genre || !image || !systemEntryDate || !synopsis) {
+    return response.status(400).json({
+      error:
+        'Possible information is missing: tittle, author, genre,image,systemEntryDate, synopsis ',
+    });
+  }
+
   const newBook = {
-    id: uuidv4(),
+    id: randomUUID(),
     tittle,
     author,
     genre,
     status: {
-      description: "",
+      description: '',
       isActive: true,
     },
     image,
@@ -136,56 +140,34 @@ app.post("/books", function (request, response) {
          ATUALIZAR LIVRO
 -------------------------------
 */
-app.put("/books/:idBook", function (request, response) {
+app.put('/books/:idBook/update', function (request, response) {
   const { idBook } = request.params;
-  const {
-    id,
-    tittle,
-    author,
-    genre,
-    status,
-    image,
-    systemEntryDate,
-    synopsis,
-    rentHistory,
-  } = request.body;
+  const { tittle, author, genre, image, systemEntryDate, synopsis } =
+    request.body;
 
-  const indexBook = books.findIndex((item) => item.id === idBook);
+  const indexBook = books.findIndex(item => item.id === idBook);
 
   if (indexBook < 0) {
+    return response.status(404).json({ error: 'Book not found!' });
     //Se não encontrou nada, retornamos um erro
-    return response.status(404).json({ error: "Project not found" });
   }
 
-  if (
-    !id ||
-    !tittle ||
-    !author ||
-    !genre ||
-    !status ||
-    !image ||
-    !systemEntryDate ||
-    !synopsis ||
-    !rentHistory
-  ) {
+  if (!tittle || !author || !genre || !image || !systemEntryDate || !synopsis) {
     return response.status(400).json({
       error:
-        "Possible information is missing:id, tittle, author, genre, status, image,systemEntryDate, synopsis, rentHistory ",
+        'Possible information is missing: tittle, author, genre, image,systemEntryDate, synopsis ',
     });
     //Status 400 pois é uma bad request.
   }
-  //É necessário passar todas informações do livro para altera-lo
 
   const updateBook = {
-    id,
+    ...books[indexBook],
     tittle,
     author,
     genre,
-    status,
     image,
     systemEntryDate,
     synopsis,
-    rentHistory,
   };
 
   books[indexBook] = updateBook;
@@ -195,65 +177,41 @@ app.put("/books/:idBook", function (request, response) {
 
 /* 
 -------------------------------
-          DELETAR LIVRO
--------------------------------
-*/
-app.delete("/books/:idBook", function (request, response) {
-  const { idBook } = request.params;
-
-  const indexBook = books.findIndex((item) => item.id === idBook);
-
-  if (indexBook < 0) {
-    //Se não encontrou nada, retornamos um erro
-    return response.status(404).json({ error: "Project not found" });
-  }
-
-  books.splice(indexBook, 1);
-  //Posição do item para apagar e a quantidade
-
-  return response.status(204).send();
-  // Como não tem conteúdo, passamos um send ao invés do json.
-  // Status 204 para avisar o usuário que seu delete funcionou
-});
-
-app.listen(3000, () => {
-  console.log("Server Started on port 3000! 💀");
-});
-// O listen vai garantir que a porta escolhida retorne a resposta da nossa rota
-
-/* 
--------------------------------
           EMPRESTAR LIVRO
 -------------------------------
 */
 
-app.post("/books/:idBook", function (request, response) {
+app.post('/books/:idBook/lend', function (request, response) {
   const { idBook } = request.params;
   const { studentName, className, withdrawalDate, deliveryDate } = request.body;
-
-  const indexBook = books.findIndex((item) => item.id === idBook);
-
-  if (indexBook < 0) {
-    //Se não encontrou nada, retornamos um erro
-    return response.status(404).json({ error: "Project not found" });
-  }
 
   if (!studentName || !className || !withdrawalDate || !deliveryDate) {
     return response.status(400).json({
       error:
-        "Possible information is missing:id, tittle, author, genre, status, image,systemEntryDate, synopsis, rentHistory ",
+        'Possible information is missing:studentName,className,withdrawalDate, systemEntryDate ',
     });
     //Status 400 pois é uma bad request.
   }
-  //É necessário passar todas informações do livro para altera-lo
+
+  if (new Date(withdrawalDate).valueOf > new Date(deliveryDate).valueOf) {
+    return response
+      .status(204)
+      .json({ error: 'Entry date cannot be greater than withdrawal date' });
+  }
+
+  const indexBook = books.findIndex(item => item.id === idBook);
+
+  if (indexBook < 0) {
+    //Se não encontrou nada, retornamos um erro
+    return response.status(404).json({ error: 'Book not found' });
+  }
 
   const newRentHistory = {
     studentName,
     className,
     withdrawalDate,
     deliveryDate,
-    id: uuidv4(),
-    isBorrowed: true,
+    id: randomUUID(),
   };
 
   books[indexBook].rentHistory.push(newRentHistory);
@@ -266,67 +224,53 @@ app.post("/books/:idBook", function (request, response) {
           DEVOLVER LIVRO
 -------------------------------
 */
-app.patch("/books/:idBook/:idRent", function (request, response) {
+app.patch('/books/:idBook/returned/:idRent', function (request, response) {
   const { idBook, idRent } = request.params;
-  const { studentName, className, withdrawalDate, deliveryDate, isBorrowed } =
-    request.body;
 
-  const indexBook = books.findIndex((item) => item.id === idBook);
-  const bookFind = books.find((item) => item.id === idBook);
+  const indexBook = books.findIndex(item => item.id === idBook);
+  const bookFind = books[indexBook];
+
+  const rentIndex = bookFind.rentHistory.findIndex(rent => rent.id === idRent);
 
   if (indexBook < 0) {
     //Se não encontrou nada, retornamos um erro
-    return response.status(404).json({ error: "Book not found" });
+    return response.status(404).json({ error: 'Book not found' });
   }
 
-  const indexRent = bookFind.rentHistory.findIndex(
-    (item) => item.id === idRent
-  );
+  const indexRent = bookFind.rentHistory.findIndex(item => item.id === idRent);
 
   if (indexRent < 0) {
-    return response.status(404).json({ error: "RentHistory not found" });
+    return response.status(404).json({ error: 'RentHistory not found' });
   }
 
-  if (!studentName || !className || !withdrawalDate || !deliveryDate) {
-    return response.status(400).json({
-      error: "Possible information is missing:id, deliveryDate ",
-    });
-  }
-
-  const updateRentHistory = {
-    studentName,
-    className,
-    withdrawalDate,
-    deliveryDate,
-    id: idRent,
-    isBorrowed: false,
+  const updateRenthistory = {
+    ...bookFind.rentHistory[rentIndex],
+    deliveryDate: new Date().toISOString(),
   };
 
-  books[indexBook].rentHistory[indexRent] = updateRentHistory;
-
-  return response.status(200).json(updateRentHistory);
+  return response.status(200).json(updateRenthistory);
 });
 
 /*
   INATIVAR LIVRO
 */
 
-app.patch("/books/:idBook", function (request, response) {
+app.patch('/books/:idBook/inactive', function (request, response) {
   const { idBook } = request.params;
   const { description } = request.body;
 
-  const indexBook = books.findIndex((item) => item.id === idBook);
-  const bookFind = books.find((item) => item.id === idBook);
+  if (!description) {
+    return response.status(400).json({
+      error: 'Description required',
+    });
+  }
+
+  const indexBook = books.findIndex(item => item.id === idBook);
+  const bookFind = books[indexBook];
 
   if (indexBook < 0) {
     //Se não encontrou nada, retornamos um erro
-    return response.status(404).json({ error: "Book not found" });
-  }
-
-  if (!description) {
-    return response.status(400).json({
-      error: "Description required",
-    });
+    return response.status(404).json({ error: 'Book not found' });
   }
 
   const updateStatus = {
@@ -336,7 +280,10 @@ app.patch("/books/:idBook", function (request, response) {
 
   bookFind.status = updateStatus;
 
-  books[indexBook] = bookFind;
-
   return response.status(200).json(updateStatus);
 });
+
+app.listen(3000, () => {
+  console.log('Server Started on port 3000! 💀');
+});
+// O listen vai garantir que a porta escolhida retorne a resposta da nossa rota
