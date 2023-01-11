@@ -46,16 +46,9 @@ Requests available
 | PATCH  | http:localhost/3000/books/:idBook/inactive    | inactivate book             |
 | PATCH  | http:localhost/3000/books/:idBook/active      | activate book               |
 
-You can also change localhost to whatever you like.
+You can also change localhost to whatever you like. Just remember to update
+the index.js in app.listen the new port number
 Follow examples
-
-Add in 'scripts' the desired port number.
-
-```sh
-"dev": "nodemon src/index.js --port3333"
-```
-
-In the index.js folder, update in app.listen the port number
 
 ```sh
 app.listen(3333, () -> {
