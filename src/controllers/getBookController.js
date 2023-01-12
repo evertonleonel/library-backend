@@ -1,5 +1,8 @@
 import { allBooks as books } from '../books/allBooks.js';
-
+import {
+  getAllBooks,
+  getBook as getOneBook,
+} from '../repositories/booksRepository.js';
 /* 
 -------------------------------
        BUSCAR HISTORICO DO LIVRO
@@ -43,15 +46,13 @@ export const getBookHistories = (request, response) => {
 
 export const getBook = (request, response) => {
   const { idBook } = request.params;
+  const book = getOneBook(idBook);
 
-  const indexBook = books.findIndex(item => item.id === idBook);
-  const bookFind = books[indexBook];
-
-  if (indexBook < 0) {
+  if (!book) {
     //Se não encontrou nada, retornamos um erro
     return response.status(404).json({ error: 'Book not found' });
   }
-  return response.json(bookFind);
+  return response.json(book);
 };
 
 /* 
@@ -60,5 +61,5 @@ export const getBook = (request, response) => {
 -------------------------------
 */
 export const getBooks = (request, response) => {
-  return response.json(books);
+  return response.json(getAllBooks());
 };

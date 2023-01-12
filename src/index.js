@@ -7,6 +7,7 @@ app.use(express.json());
 //Express conseguirá ler json.
 
 app.use(routes);
+
 //Invocando as rotas
 
 app.listen(3000, () => {

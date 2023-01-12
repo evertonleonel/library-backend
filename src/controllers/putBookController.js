@@ -1,4 +1,7 @@
-import { allBooks as books } from '../books/allBooks.js';
+import {
+  getBook as findBook,
+  updateBook as updateFindBook,
+} from '../repositories/booksRepository.js';
 
 /* 
 -------------------------------
@@ -11,9 +14,9 @@ export const putBookUpdate = (request, response) => {
   const { tittle, author, genre, image, systemEntryDate, synopsis } =
     request.body;
 
-  const indexBook = books.findIndex(item => item.id === idBook);
+  const book = findBook(idBook);
 
-  if (indexBook < 0) {
+  if (!book) {
     return response.status(404).json({ error: 'Book not found!' });
     //Se não encontrou nada, retornamos um erro
   }
@@ -27,7 +30,7 @@ export const putBookUpdate = (request, response) => {
   }
 
   const updateBook = {
-    ...books[indexBook],
+    ...book,
     tittle,
     author,
     genre,
@@ -36,7 +39,9 @@ export const putBookUpdate = (request, response) => {
     synopsis,
   };
 
-  books[indexBook] = updateBook;
+  // books[indexBook] = updateBook;
+
+  updateFindBook(book, updateBook);
 
   return response.json(updateBook);
 };

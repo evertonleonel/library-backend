@@ -1,5 +1,6 @@
 import { allBooks as books } from '../books/allBooks.js';
 import { randomUUID } from 'crypto';
+import { createBook } from '../repositories/booksRepository.js';
 
 /* 
 -------------------------------
@@ -73,7 +74,7 @@ export const postBookCreate = (request, response) => {
     rentHistory: [],
   };
 
-  books.push(newBook);
+  createBook(newBook);
 
   return response.status(201).json(newBook);
 };
