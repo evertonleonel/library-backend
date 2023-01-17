@@ -49,10 +49,12 @@ export const postBookLend = (request, response) => {
 -------------------------------
 */
 export const postBookCreate = (request, response) => {
-  const { tittle, author, genre, image, systemEntryDate, synopsis } =
-    request.body;
+  const { tittle, author, genre, systemEntryDate, synopsis } = request.body;
+  const image = request.file;
 
-  if (!tittle || !author || !genre || !image || !systemEntryDate || !synopsis) {
+  console.log(image);
+
+  if (!tittle || !author || !genre || !systemEntryDate || !synopsis) {
     return response.status(400).json({
       error:
         'Possible information is missing: tittle, author, genre,image,systemEntryDate, synopsis ',
@@ -68,7 +70,7 @@ export const postBookCreate = (request, response) => {
       description: '',
       isActive: true,
     },
-    image,
+    image: request.imageName,
     systemEntryDate,
     synopsis,
     rentHistory: [],

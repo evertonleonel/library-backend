@@ -20,12 +20,14 @@ import { getUsers, getUserEmail } from './controllers/getUsersController.js';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
-console.log(dirname, 'sou o dir');
+import multer from 'multer';
+import { storage } from './config/multer.js';
 
-console.log(path.resolve());
+const uploads = multer({ storage: storage });
 
 export const route = express.Router();
 
@@ -40,6 +42,14 @@ const corsOptions = {
   optionSuccessStatus: 200,
 };
 
+route.get('/uploads/:fileName', (req, res) => {
+  const filePath = path.join(dirname, 'books', 'uploads', req.params.fileName);
+  const exist = fs.existsSync(filePath);
+  // só verifica se existe mesmo
+  if (!exist) return res.status(404).end();
+  return res.sendFile(filePath);
+});
+
 route.get('/users/:email', cors(corsOptions), getUserEmail);
 
 route.get('/books/:idBook/rentHistory', cors(corsOptions), getBookHistory);
@@ -48,7 +58,8 @@ route.get('/books/:idBook', cors(corsOptions), getBook);
 route.get('/books', cors(corsOptions), getBooks);
 
 route.post('/books/:idBook/lend', cors(corsOptions), postBookLend);
-route.post('/books', cors(), postBookCreate);
+
+route.post('/books', cors(), uploads.single('image'), postBookCreate);
 
 route.put('/books/:idBook/update', cors(corsOptions), putBookUpdate);
 
@@ -59,5 +70,3 @@ route.patch(
 );
 route.patch('/books/:idBook/active', cors(corsOptions), patchBookActive);
 route.patch('/books/:idBook/inactive', cors(corsOptions), patchBookInactive);
-
-route.use(cors(corsOptions));

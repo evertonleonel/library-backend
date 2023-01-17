@@ -39,8 +39,6 @@ export const putBookUpdate = (request, response) => {
     synopsis,
   };
 
-  // books[indexBook] = updateBook;
-
   updateFindBook(book, updateBook);
 
   return response.json(updateBook);

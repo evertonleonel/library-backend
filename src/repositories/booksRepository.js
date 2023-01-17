@@ -24,9 +24,13 @@ export const getBook = bookID => {
 };
 
 export const updateBook = (bookFind, updateBook) => {
-  const bookFound = getAllBooks().find(book => book === bookFind);
+  const books = getAllBooks();
 
-  getAllBooks().Object.assign(bookFound, updateBook);
+  const findBookIndex = books.findIndex(book => book.id === bookFind.id);
+
+  books[findBookIndex] = updateBook;
+
+  fs.writeFileSync(booksPathName, JSON.stringify(books, null, 2));
 
   return updateBook;
 };
